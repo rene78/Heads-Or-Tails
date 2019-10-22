@@ -1,0 +1,15 @@
+{
+  "name": "heads-or-tails",
+  "version": "0.1.0",
+  "description": "An Ethereum gambling dApp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "rene78",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1"
+  }
+}
