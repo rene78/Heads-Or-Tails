@@ -5,7 +5,8 @@ pragma solidity ^0.5.0;
 contract HeadsOrTails {
     address payable owner;
     string public name;
-    // string public str;
+
+    event Play(uint contractBalance, uint incomingEth);//Log values for debugging purposes
 
   // Contract constructor run only on contract creation. Set owner
   constructor() public {
@@ -38,6 +39,8 @@ contract HeadsOrTails {
         require(guess == 0 || guess == 1, "Variable 'guess' should be either 0 or 1");
         require(msg.value <= address(this).balance - msg.value, "You cannot bet more than what is available in the jackpot");
         //address(this).balance is increased by msg.value even before code is executed. Thus "address(this).balance-msg.value"
+        emit Play(msg.value, address(this).balance); //Log values for debugging purposes.
+        //Catch events like that: https://github.com/ethereumbook/ethereumbook/blob/develop/07smart-contracts-solidity.asciidoc#catching-events
 
         if (guess == block.timestamp % 2){
             msg.sender.transfer(msg.value * 2);
@@ -47,6 +50,6 @@ contract HeadsOrTails {
         }
     }
 
-    // Accept any incoming amount
+    // Accept any incoming amount 1200000000000000000
     function () external payable {}
 }
