@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Heads or Tails | A simple Ethereum game</title>
+</head>
+
+<body>
+  <h1>Heads or Tails</h1>
+  <p>Bet on heads or tails, select an amount of Ether and press play!</p>
+  <input type="radio" name="ht-selector" checked> Heads<br>
+  <input type="radio" name="ht-selector"> Tails<br>
+  <input type="number" id="amount-to-bet" placeholder="Amount to bet" min="0" step="0.1">ETH <br>
+  <input type="submit" value="Play!" onclick="play()">
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.34/dist/web3.min.js"></script>
+  <script src="dist/main.js"></script>
+</body>
+
+</html>

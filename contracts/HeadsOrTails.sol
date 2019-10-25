@@ -50,6 +50,6 @@ contract HeadsOrTails {
         }
     }
 
-    // Accept any incoming amount 1200000000000000000
+    // Accept any incoming amount
     function () external payable {}
 }
