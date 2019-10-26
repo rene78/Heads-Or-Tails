@@ -1,7 +1,12 @@
+//import Web3 from "web3";//Bundle size of web3.js is huge (>1MB)! So once development is done only load the required modules, e.g. web3-eth
 import HeadsOrTails from '../build/contracts/HeadsOrTails.json';
 
 window.addEventListener('load', loadWeb3());
-window.addEventListener('load', loadBlockchainData());
+document.getElementById("play-btn").addEventListener("click", play);
+
+//Global variables
+let headsOrTails;
+let account;
 
 async function loadWeb3() {
   // Modern dapp browsers...
@@ -12,7 +17,7 @@ async function loadWeb3() {
       await ethereum.enable();
       console.log("User has a MODERN dapp browser!");
       // Acccounts now exposed
-      //web3.eth.sendTransaction({/* ... */});
+      loadBlockchainData();
     } catch (error) {
       console.log("User denied access!");
     }
@@ -21,12 +26,13 @@ async function loadWeb3() {
   else if (window.web3) {
     window.web3 = new Web3(web3.currentProvider);
     console.log("User has a LEGACY dapp browser!");
+    loadBlockchainData();
     // Acccounts always exposed
     //web3.eth.sendTransaction({/* ... */});
   }
   // Non-dapp browsers...
   else {
-    console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+    window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
   }
 }
 
@@ -34,7 +40,7 @@ async function loadBlockchainData() {
   // Load account
   // const web3 = window.web3; //Was used at demo dapp. Not sure why.
   const accounts = await web3.eth.getAccounts();
-  let account=accounts[0];
+  account=accounts[0];
   console.log(account);
   const networkId = await web3.eth.net.getId();
   console.log(networkId);
@@ -42,7 +48,7 @@ async function loadBlockchainData() {
   console.log(networkData);
   if (networkData) {
     console.log("HeadsOrTails contract is deployed to this network.");
-    const headsOrTails = new web3.eth.Contract(HeadsOrTails.abi, networkData.address);
+    headsOrTails = new web3.eth.Contract(HeadsOrTails.abi, networkData.address);
     console.log(headsOrTails);
     const productCount = await headsOrTails.methods.name().call();
     console.log(productCount);
@@ -67,4 +73,6 @@ function play() {
 
   const amountToBetWei = window.web3.utils.toWei(amountToBetEther, 'Ether');
   console.log(amountToBetWei);
+  // headsOrTails.sendTransaction({ from: account, value: amountToBetWei });
+  headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
 }
