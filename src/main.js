@@ -39,9 +39,6 @@ async function loadWeb3() {
 async function loadBlockchainData() {
   // Load account
   // const web3 = window.web3; //Was used at demo dapp. Not sure why.
-  const accounts = await web3.eth.getAccounts();
-  account=accounts[0];
-  console.log(account);
   const networkId = await web3.eth.net.getId();
   console.log(networkId);
   const networkData = HeadsOrTails.networks[networkId];
@@ -50,14 +47,14 @@ async function loadBlockchainData() {
     console.log("HeadsOrTails contract is deployed to this network.");
     headsOrTails = new web3.eth.Contract(HeadsOrTails.abi, networkData.address);
     console.log(headsOrTails);
-    const productCount = await headsOrTails.methods.name().call();
-    console.log(productCount);
+    const dappName = await headsOrTails.methods.name().call();
+    console.log(dappName);
   } else {
     window.alert('Marketplace contract not deployed to detected network.')
   }
 }
 
-function play() {
+async function play() {
   //Find out which radio button is selected and how much money is bet.
   const radios = document.getElementsByName("ht-selector");
   const amountToBetEther = document.querySelector("#amount-to-bet").value;
@@ -73,6 +70,8 @@ function play() {
 
   const amountToBetWei = window.web3.utils.toWei(amountToBetEther, 'Ether');
   console.log(amountToBetWei);
-  // headsOrTails.sendTransaction({ from: account, value: amountToBetWei });
+  const accounts = await web3.eth.getAccounts();
+  account=accounts[0];
+  console.log(account);
   headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
 }
