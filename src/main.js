@@ -47,8 +47,14 @@ async function loadBlockchainData() {
     console.log("HeadsOrTails contract is deployed to this network.");
     headsOrTails = new web3.eth.Contract(HeadsOrTails.abi, networkData.address);
     console.log(headsOrTails);
+    //Load variable from contract (just a test)
     const dappName = await headsOrTails.methods.name().call();
     console.log(dappName);
+    //Populate table of last played games & Display amount of ETH in jackpot
+    getLatestGameData();
+    getContractBalance();
+    //Show contract address
+    document.querySelector(".contract-address").innerText = networkData.address;
   } else {
     window.alert('Marketplace contract not deployed to detected network.')
   }
@@ -66,12 +72,47 @@ async function play() {
     }
   }
   console.log("0 or 1: " + headsOrTailsSelection);
-  console.log("Amount to bet: " + amountToBetEther);
+  console.log("Amount to bet (ETH): " + amountToBetEther);
 
   const amountToBetWei = window.web3.utils.toWei(amountToBetEther, 'Ether');
-  console.log(amountToBetWei);
+  console.log("Amount to bet (Wei): " + amountToBetWei);
   const accounts = await web3.eth.getAccounts();
-  account=accounts[0];
+  account = accounts[0];
   console.log(account);
-  headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
+  await headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
+  getLatestGameData();
+  getContractBalance()
+}
+
+async function getContractBalance() {
+  const currentBalance = await web3.eth.getBalance(headsOrTails._address);
+  console.log("Contract balance (ETH): " + currentBalance / 1e18);
+  document.querySelector(".eth-in-jackpot").innerText = currentBalance / 1e18;
+}
+
+async function getLatestGameData() {
+  const gameCount = await headsOrTails.methods.getGameCount().call();
+  // console.log(gameCount);
+  //Purge table before populating
+  document.querySelector("#table-body").innerHTML = "";
+  //Populate table
+  let t = document.querySelector('#productrow');
+  let td = t.content.querySelectorAll("td");
+  const maxEntriesToDisplay = 3;
+  for (let i = gameCount - 1; i >= 0; i--) {
+    const gameEntry = await headsOrTails.methods.getGameEntry(i).call();
+    let result = gameEntry.winner ? "Won" : "Lost";
+    //Shorten player address
+    const addressShortened = gameEntry.addr.slice(0, 3) + "..." + gameEntry.addr.slice(-3);
+    td[0].textContent = addressShortened;
+    td[1].textContent = gameEntry.bet / 1e18 + " ETH";
+    td[2].textContent = result;
+    td[3].textContent = gameEntry.ethInJackpot / 1e18 + " ETH";
+
+    let tb = document.querySelector("#table-body");
+    let clone = document.importNode(t.content, true);
+    tb.appendChild(clone);
+    //Show only the last five games max
+    // if (i <= gameCount - maxEntriesToDisplay) break;
+  }
 }
