@@ -2,11 +2,17 @@
 import HeadsOrTails from '../build/contracts/HeadsOrTails.json';
 
 window.addEventListener('load', loadWeb3());
-document.getElementById("play-btn").addEventListener("click", play);
+window.addEventListener('load', getEthFiatRate());
+document.getElementById("form").addEventListener("submit", function(event){
+  event.preventDefault();
+  play();
+});
+document.getElementById("amount-to-bet").addEventListener("input", calcFiat);
 
 //Global variables
 let headsOrTails;
 let account;
+let ethUsd;
 
 async function loadWeb3() {
   // Modern dapp browsers...
@@ -32,6 +38,7 @@ async function loadWeb3() {
   }
   // Non-dapp browsers...
   else {
+    //Load blockchain data (jackpot, last games) via Infura
     window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
   }
 }
@@ -81,13 +88,16 @@ async function play() {
   console.log(account);
   await headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
   getLatestGameData();
-  getContractBalance()
+  getContractBalance();
 }
 
 async function getContractBalance() {
-  const currentBalance = await web3.eth.getBalance(headsOrTails._address);
-  console.log("Contract balance (ETH): " + currentBalance / 1e18);
-  document.querySelector(".eth-in-jackpot").innerText = currentBalance / 1e18;
+  const currentBalanceEth = await web3.eth.getBalance(headsOrTails._address) / 1e18;
+  console.log("Contract balance (ETH): " + currentBalanceEth);
+  document.querySelector(".eth-in-jackpot").innerHTML = currentBalanceEth + " (~" + (currentBalanceEth * ethUsd).toFixed(2) + "$)";
+
+  //Set the max bet value to contract balance (i.e money in jackpot)
+  document.querySelector("#amount-to-bet").max = currentBalanceEth;
 }
 
 async function getLatestGameData() {
@@ -115,4 +125,36 @@ async function getLatestGameData() {
     //Show only the last five games max
     // if (i <= gameCount - maxEntriesToDisplay) break;
   }
+}
+
+async function getEthFiatRate() {
+  const url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR";
+  fetch(url)
+    .then(handleErrors)
+    .then(res => {
+      return res.json();
+    })
+    .then(data => {
+      console.log(data.USD);
+      ethUsd = data.USD;
+      // return (data.EUR);
+    })
+    .catch(error => console.error(error));
+}
+
+//Handle errors from fetch operation
+function handleErrors(response) {
+  //console.log(response);
+  if (!response.ok) {
+    throw Error(response.statusText);
+  }
+  return response;
+}
+
+function calcFiat() {
+  const amountToBetEther = document.querySelector("#amount-to-bet").value;
+  const betInDollar = document.querySelector("#bet-in-dollar");
+  // console.log(amountToBetEther);
+  // console.log(ethUsd);
+  betInDollar.innerText = (amountToBetEther * ethUsd).toFixed(2);
 }
