@@ -3,7 +3,7 @@ import HeadsOrTails from '../build/contracts/HeadsOrTails.json';
 
 window.addEventListener('load', loadWeb3());
 window.addEventListener('load', getEthFiatRate());
-document.getElementById("form").addEventListener("submit", function(event){
+document.getElementById("form").addEventListener("submit", (event) => {
   event.preventDefault();
   play();
 });
@@ -71,13 +71,8 @@ async function play() {
   //Find out which radio button is selected and how much money is bet.
   const radios = document.getElementsByName("ht-selector");
   const amountToBetEther = document.querySelector("#amount-to-bet").value;
-  let headsOrTailsSelection;
-  for (var i = 0; i < radios.length; i++) {
-    if (radios[i].checked) {
-      headsOrTailsSelection = i;
-      break;
-    }
-  }
+  let headsOrTailsSelection=document.querySelector(":checked").value;
+
   console.log("0 or 1: " + headsOrTailsSelection);
   console.log("Amount to bet (ETH): " + amountToBetEther);
 
