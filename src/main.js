@@ -71,7 +71,7 @@ async function play() {
   //Find out which radio button is selected and how much money is bet.
   const radios = document.getElementsByName("ht-selector");
   const amountToBetEther = document.querySelector("#amount-to-bet").value;
-  let headsOrTailsSelection=document.querySelector(":checked").value;
+  let headsOrTailsSelection = document.querySelector(":checked").value;
 
   console.log("0 or 1: " + headsOrTailsSelection);
   console.log("Amount to bet (ETH): " + amountToBetEther);
@@ -80,8 +80,15 @@ async function play() {
   console.log("Amount to bet (Wei): " + amountToBetWei);
   const accounts = await web3.eth.getAccounts();
   account = accounts[0];
+
+  //test
+  headsOrTails.once('GameResult', function(error, event){ console.log(event.returnValues); });
+
   console.log(account);
-  await headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
+  let returnValue;
+  returnValue = await headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
+  console.log(returnValue);
+
   getLatestGameData();
   getContractBalance();
 }
@@ -89,7 +96,7 @@ async function play() {
 async function getContractBalance() {
   const currentBalanceEth = await web3.eth.getBalance(headsOrTails._address) / 1e18;
   console.log("Contract balance (ETH): " + currentBalanceEth);
-  document.querySelector(".eth-in-jackpot").innerHTML = currentBalanceEth + " (~" + (currentBalanceEth * ethUsd).toFixed(2) + "$)";
+  document.querySelector(".eth-in-jackpot").innerHTML = currentBalanceEth + " ETH (~" + (currentBalanceEth * ethUsd).toFixed(2) + "$)";
 
   //Set the max bet value to contract balance (i.e money in jackpot)
   document.querySelector("#amount-to-bet").max = currentBalanceEth;
@@ -107,12 +114,14 @@ async function getLatestGameData() {
   for (let i = gameCount - 1; i >= 0; i--) {
     const gameEntry = await headsOrTails.methods.getGameEntry(i).call();
     let result = gameEntry.winner ? "Won" : "Lost";
+    let guess = gameEntry.guess == 0 ? "Heads" : "Tails";
     //Shorten player address
     const addressShortened = gameEntry.addr.slice(0, 3) + "..." + gameEntry.addr.slice(-3);
     td[0].textContent = addressShortened;
-    td[1].textContent = gameEntry.bet / 1e18 + " ETH";
-    td[2].textContent = result;
-    td[3].textContent = gameEntry.ethInJackpot / 1e18 + " ETH";
+    td[1].textContent = gameEntry.amountBet / 1e18 + " ETH";
+    td[2].textContent = guess;
+    td[3].textContent = result;
+    td[4].textContent = gameEntry.ethInJackpot / 1e18 + " ETH";
 
     let tb = document.querySelector("#table-body");
     let clone = document.importNode(t.content, true);

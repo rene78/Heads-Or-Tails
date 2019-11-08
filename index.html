@@ -18,7 +18,7 @@
   <form id="form">
     <input type="radio" name="ht-selector"  value="0" checked> Heads (0)<br>
     <input type="radio" name="ht-selector" value="1"> Tails (1)<br>
-    <input type="number" id="amount-to-bet" placeholder="Amount to bet" min="0.01" step="0.01">ETH (~<span id="bet-in-dollar"></span>$)<br>
+    <input type="number" id="amount-to-bet" placeholder="Amount to bet" min="0.01" step="0.01" required>ETH (~<span id="bet-in-dollar"></span>$)<br>
     <input type="submit" value="Play!">
   </form>
   <h2>Ether in jackpot</h2>
@@ -29,6 +29,7 @@
       <tr>
         <th>Address</th>
         <th>Amount bet</th>
+        <th>Bet on</th>
         <th>Won/Lost</th>
         <th>Jackpot</th>
       </tr>
@@ -41,6 +42,7 @@
 
   <template id="productrow">
     <tr>
+      <td></td>
       <td></td>
       <td></td>
       <td></td>
