@@ -7,7 +7,7 @@ document.getElementById("form").addEventListener("submit", (event) => {
   event.preventDefault();
   play();
 });
-document.getElementById("amount-to-bet").addEventListener("input", calcFiat);
+document.getElementById("amount-to-bet").addEventListener("input", calcFiat); //Calculate value in USD during input
 
 //Global variables
 let headsOrTails;
@@ -61,7 +61,7 @@ async function loadBlockchainData() {
     getLatestGameData();
     getContractBalance();
     //Show contract address
-    document.querySelector(".contract-address").innerText = networkData.address;
+    document.querySelector(".contract-address").innerHTML = '<a href="https://ropsten.etherscan.io/address/' + networkData.address + '">' + networkData.address + '</a>';
   } else {
     window.alert('Marketplace contract not deployed to detected network.')
   }
@@ -80,14 +80,19 @@ async function play() {
   console.log("Amount to bet (Wei): " + amountToBetWei);
   const accounts = await web3.eth.getAccounts();
   account = accounts[0];
+  // console.log(account);
 
-  //test
-  headsOrTails.once('GameResult', function(error, event){ console.log(event.returnValues); });
-
-  console.log(account);
-  let returnValue;
-  returnValue = await headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
-  console.log(returnValue);
+  //Once the event "GameResult" is emitted from the smart contract, display game result.
+  headsOrTails.once('GameResult',
+    function (error, event) {
+      let message = (event.returnValues[0] === true) ? "You won!" : "You lost!";
+      window.alert(message);
+      // console.log(event.returnValues[0]);
+    }
+  );
+  toggleBlur();
+  await headsOrTails.methods.lottery(headsOrTailsSelection).send({ from: account, value: amountToBetWei });
+  toggleBlur();
 
   getLatestGameData();
   getContractBalance();
@@ -127,7 +132,7 @@ async function getLatestGameData() {
     let clone = document.importNode(t.content, true);
     tb.appendChild(clone);
     //Show only the last five games max
-    // if (i <= gameCount - maxEntriesToDisplay) break;
+    if (i <= gameCount - maxEntriesToDisplay) break;
   }
 }
 
@@ -161,4 +166,10 @@ function calcFiat() {
   // console.log(amountToBetEther);
   // console.log(ethUsd);
   betInDollar.innerText = (amountToBetEther * ethUsd).toFixed(2);
+}
+
+document.querySelector(".test").addEventListener("click", toggleBlur);
+function toggleBlur() {
+  // let blur = document.querySelector(".wait");
+  document.body.classList.toggle("wait");
 }

@@ -1,5 +1,5 @@
 // Version of Solidity compiler this program was written for
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.8;
 
 // Heads or tails game contract
 contract HeadsOrTails {
@@ -45,9 +45,6 @@ contract HeadsOrTails {
       msg.sender.transfer(msg.value * 2);
       won = true;
     }
-
-// EMIT für "won = false" gibt immer "null" zurück. Rausfinden warum!
-// block.timestamp vor deploy rausschmeissen!
 
     emit GameResult(won);
     lastPlayedGames.push(Game(msg.sender, msg.value, guess, won, address(this).balance));
