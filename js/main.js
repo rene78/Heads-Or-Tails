@@ -10,11 +10,10 @@ const abi = [
 
 //Global variables
 let headsOrTails;
-let account;
 let ethUsd;
-const deployedNetwork = 5777;//To which network is the contract deployed? Ganache: 5777, Ropsten: 3, Mainnet: 1
-// const contractAddress = "0x7f8b9483b79f735C34820497A1a7f9FB82C9224b";//Contract address on Ropsten
-const contractAddress = "7855c451eE02CA17B4e2C08B628D5445FbF3dc6b";//Contract address on Ganache
+const deployedNetwork = 3;//To which network is the contract deployed? Ganache: 5777, Ropsten: 3, Mainnet: 1
+const contractAddress = "0x7f8b9483b79f735C34820497A1a7f9FB82C9224b";//Contract address on Ropsten
+// const contractAddress = "7855c451eE02CA17B4e2C08B628D5445FbF3dc6b";//Contract address on Ganache
 let provider;
 let signer;
 
@@ -23,8 +22,14 @@ window.addEventListener('load', getEthFiatRate());
 document.getElementById("form").addEventListener("submit", (event) => {
   event.preventDefault();
   play();
-});
-document.getElementById("amount-to-bet").addEventListener("input", calcFiat); //Calculate value in USD during input
+}); //Launch play() when user clicks on play button
+document.getElementById("amount-to-bet").addEventListener("input", () => {
+  const amountToBetEther = document.querySelector("#amount-to-bet").value;
+  const betInDollar = document.querySelector("#bet-in-dollar");
+  // console.log(amountToBetEther);
+  // console.log(ethUsd);
+  betInDollar.innerText = calcFiat(amountToBetEther);
+}); //Calculate value in USD during input
 
 async function loadWeb3() {
   // Connect to the network
@@ -35,11 +40,12 @@ async function loadWeb3() {
       await ethereum.enable();//If this doesn't work an error is thrown
       console.log("User has a MODERN dapp browser!");
       provider = new ethers.providers.Web3Provider(ethereum);
+      // console.log(provider);
 
       // Acccounts now exposed. Load the contract!
       loadBlockchainData();
     } catch (error) {
-      console.log("There was and error: ", error.message);
+      console.log("There was and error: ", error.message);//In case user denied access
     }
   }
   // Legacy dapp browsers (acccounts always exposed)...
@@ -50,8 +56,11 @@ async function loadWeb3() {
   }
   // Non-dapp browsers...
   else {
-    //Load blockchain data (jackpot, last games) via Infura
+    //Load blockchain and contract data (jackpot, last games) via ethers default provider (Infura, Etherscan)
     window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
+    provider = ethers.getDefaultProvider('ropsten');
+    // console.log(provider);
+    loadBlockchainData();
   }
 }
 
@@ -61,8 +70,10 @@ async function loadBlockchainData() {
   // console.log(activeNetwork);
 
   if (activeNetwork.chainId === deployedNetwork) {
-    // We connect to the Contract using a signer, so we have read and write access
-    signer = provider.getSigner();
+    //When connected via Metamask (i.e. "provider.connection" defined) define a signer (for read-write accesss),
+    //else (i.e. non-ethereum browser) use provider (read access only)
+    if (provider.connection) signer = provider.getSigner(); else signer = provider;
+
     headsOrTails = new ethers.Contract(contractAddress, abi, signer);
     console.log(headsOrTails);
 
@@ -127,7 +138,7 @@ async function getContractBalance() {
   const currentBalanceWei = await provider.getBalance(contractAddress);
   const currentBalanceEth = ethers.utils.formatEther(currentBalanceWei);
   console.log("Contract balance (ETH): " + currentBalanceEth);
-  document.querySelector(".eth-in-jackpot").innerHTML = currentBalanceEth + " ETH (~" + (currentBalanceEth * ethUsd).toFixed(2) + "$)";
+  document.querySelector(".eth-in-jackpot").innerHTML = currentBalanceEth + " ETH (~" + (calcFiat(currentBalanceEth)) + "$)";
 
   //Set the max bet value to contract balance (i.e money in jackpot)
   document.querySelector("#amount-to-bet").max = currentBalanceEth;
@@ -187,15 +198,13 @@ function handleErrors(response) {
   return response;
 }
 
-function calcFiat() {
-  const amountToBetEther = document.querySelector("#amount-to-bet").value;
-  const betInDollar = document.querySelector("#bet-in-dollar");
-  // console.log(amountToBetEther);
+function calcFiat(etherToConvert) {
+  // console.log(etherToConvert);
   // console.log(ethUsd);
-  betInDollar.innerText = (amountToBetEther * ethUsd).toFixed(2);
+  return (etherToConvert * ethUsd).toFixed(2);
 }
 
-// Temporary stuff
+// ---------------------------Temporary stuff---------------------------
 // Blur button
 document.querySelector(".blur").addEventListener("click", toggleBlur);
 function toggleBlur() {
@@ -207,7 +216,6 @@ function toggleBlur() {
 document.querySelector(".load-data").addEventListener("click", getWei);
 
 async function getWei() {
-  const amountToBetEther = document.querySelector("#amount-to-bet").value;
-  const amountToBetWei = ethers.utils.parseEther(amountToBetEther);
-  console.log("Wei:", amountToBetWei);
+  let jackpot = headsOrTails.getValue();
+  console.log(jackpot);
 }
