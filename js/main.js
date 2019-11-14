@@ -21,7 +21,12 @@ window.addEventListener('load', loadWeb3());
 window.addEventListener('load', getEthFiatRate());
 document.getElementById("form").addEventListener("submit", (event) => {
   event.preventDefault();
-  play();
+  //Find out which radio button is selected and how much money is bet.
+  const amountToBetEther = document.querySelector("#amount-to-bet").value;
+  const headsOrTailsSelection = document.querySelector(":checked").value;
+  // console.log("0 or 1: " + headsOrTailsSelection);
+  // console.log("Amount to bet (ETH): " + amountToBetEther);
+  play(headsOrTailsSelection, amountToBetEther);
 }); //Launch play() when user clicks on play button
 document.getElementById("amount-to-bet").addEventListener("input", () => {
   const amountToBetEther = document.querySelector("#amount-to-bet").value;
@@ -85,14 +90,7 @@ async function loadBlockchainData() {
   } else window.alert("Contract not deployed to selected network");
 }
 
-async function play() {
-  //Find out which radio button is selected and how much money is bet.
-  const amountToBetEther = document.querySelector("#amount-to-bet").value;
-  const headsOrTailsSelection = document.querySelector(":checked").value;
-
-  console.log("0 or 1: " + headsOrTailsSelection);
-  console.log("Amount to bet (ETH): " + amountToBetEther);
-
+async function play(headsOrTailsSelection, amountToBetEther) {
   const amountToBetWei = ethers.utils.parseEther(amountToBetEther);
   // console.log(amountToBetWei);
   console.log("Amount to bet (Wei): " + amountToBetWei);
@@ -116,11 +114,8 @@ async function play() {
     let tx = await headsOrTails.lottery(headsOrTailsSelection, overrides);//In case of failure it jumps straight to catch()
     console.log(tx.hash);
     logEvent();
-    toggleBlur();
-    getLatestGameData();
-    getContractBalance();
   } catch (err) {
-    console.log(err.message); // Error message in case user denied access
+    console.log(err.message); // Error message in case user rejected transfer
     toggleBlur();
   }
 }
@@ -128,8 +123,11 @@ async function play() {
 //Listen for an event. After receipt stop listening.
 function logEvent() {
   headsOrTails.once("GameResult", (won, event) => {
-    window.alert(won);
-    console.log(`Last game won? ${won}`);
+    const msg = won ? "You won!" : "You lost!";
+    window.alert(msg);
+    toggleBlur();
+    getLatestGameData();
+    getContractBalance();
     // console.log(event);
   });
 }
@@ -153,7 +151,7 @@ async function getLatestGameData() {
   //Populate table
   let t = document.querySelector('#productrow');
   let td = t.content.querySelectorAll("td");
-  const maxEntriesToDisplay = 3;
+  const maxEntriesToDisplay = 5;
   for (let i = gameCount - 1; i >= 0; i--) {
     const gameEntry = await headsOrTails.getGameEntry(i);
     let result = gameEntry.winner ? "Won" : "Lost";
@@ -170,7 +168,7 @@ async function getLatestGameData() {
     let clone = document.importNode(t.content, true);
     tb.appendChild(clone);
     //Show only the last five games max
-    // if (i <= gameCount - maxEntriesToDisplay) break;
+    if (i <= gameCount - maxEntriesToDisplay) break;
   }
 }
 
