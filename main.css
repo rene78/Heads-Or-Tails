@@ -1,3 +1,153 @@
+body {
+  background-color: black;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.header {
+  grid-area: header;
+  background-color: green;
+}
+.contract-info {
+  grid-area: contract-info;
+  /* display: none; */
+  background-color: rgb(86, 88, 82);
+}
+
+.action {
+  grid-area: action;
+  background-color: grey;
+}
+
+/* alignment of heads and tails images and radio buttons */
+
+.action img {
+  width: 70%;
+}
+
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}
+
+label {
+  display: block;
+}
+
+/* increase size of radio buttons */
+input[type="radio"] {
+  height: 25px;
+  width: 25px;
+}
+
+/* Input field for betting value */
+input[type=number] {
+  width: 50%;
+  padding: 12px 20px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  border: 1px solid #00C3FF;
+  box-sizing: border-box;
+  border-radius: 6px;
+  color: white;
+  background: transparent;
+  transition: all 0.30s ease-in-out;
+}
+
+input[type=number]:focus {
+  box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+  border: 1px solid rgba(81, 203, 238, 1);
+  outline: none;
+}
+
+/* bet in dollar */
+.exchange-rate-info {
+  display: inline-block;
+}
+
+/* info text */
+.info-text {
+  font-size: .8em;
+}
+
+/* play button */
+#play-button {
+  width: 200px;
+  background-color: #00C3FF;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  font-size: 16px;
+  cursor: pointer;
+  /* box-shadow: 2px 5px 4px #2d2d2d; */
+  border-radius: 8px;
+  display: block;
+  margin: 20px auto 20px;
+}
+
+.jackpot {
+  grid-area: jackpot;
+  background-color: red;
+}
+
+.result-coin {
+  grid-area: result-coin;
+  background-color: cyan;
+  /* height: 160px; */
+}
+
+canvas { width: 100%; height: 100%; }
+
+.recent-games {
+  grid-area: recent-games;
+  background-color: yellowgreen;
+}
+
+.recent-games-table {
+  margin: 0 auto;
+}
+
+#table-body tr:nth-child(even) {
+  background-color: #353535;
+}
+
+.won {
+  color: green;
+}
+
+.lost {
+  color: red;
+}
+
+.content {
+  display: grid;
+  grid-template-areas:
+    'header header      header       contract-info'
+    'action jackpot     recent-games recent-games'
+    'action result-coin recent-games recent-games';
+}
+
+.content > div {
+  text-align: center;
+  /* padding: 20px 0; */
+  /* font-size: 30px; */
+}
+
+@media (max-width: 600px) {
+  .content {
+    grid-template-areas:
+      'header'
+      'contract-info'
+      'action'
+      'jackpot'
+      'recent-games'
+      'result-coin';
+  }
+}
+
 .wait {
   filter: blur(2px);
 }

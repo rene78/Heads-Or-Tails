@@ -6,38 +6,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Heads or Tails | A simple Ethereum game</title>
-  <meta name="description" content="An Ethereum dApp, where you can bet on heads or tails and win Ether">
-  <link rel="canonical" href="https://heads-or-tails.renek.cc/">
-  <!--Tell Google to index this url and not the GitHub one-->
+  <meta name="description" content="An Ethereum dApp, where you can bet on heads or tails and win Ether. Provably fair and without fees.">
+  <link rel="canonical" href="https://heads-or-tails.renek.cc/"> <!--Tell Google to index this url and not the GitHub one-->
   <link rel="Shortcut Icon" href="./img/favicon.ico">
+  <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
 </head>
 
 <body>
-  <h1>Heads or Tails</h1>
-  <p>Bet on heads or tails, select an amount of Ether and press play!</p>
-  <form id="form">
-    <input type="radio" name="ht-selector" value="0" checked> Heads (0)<br>
-    <input type="radio" name="ht-selector" value="1"> Tails (1)<br>
-    <input type="number" id="amount-to-bet" placeholder="Amount to bet" min="0.01" step="0.01" required>ETH (~<span
-      id="bet-in-dollar"></span>$)<br>
-    <input type="submit" value="Play!">
-  </form>
-  <h2>Ether in jackpot</h2>
-  <p class="eth-in-jackpot"></p>
-  <h2>Recent Games</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Address</th>
-        <th>Amount bet</th>
-        <th>Bet on</th>
-        <th>Won/Lost</th>
-        <th>Jackpot</th>
-      </tr>
-    </thead>
-    <tbody id="table-body">
-    </tbody>
-  </table>
+  <div class="content">
+    <div class="header">
+      <h1>Heads or Tails</h1>
+    </div>
+    <div class="contract-info">Game only works on main net, etc.</div>
+
+    <div class="action">
+      <p>Select coin side</p>
+      <div class="row">
+        <div class="column">
+          <label for="heads">
+            <img src="/img/heads.jpg" alt="Heads">
+          </label>
+        </div>
+        <div class="column">
+          <label for="tails">
+            <img src="/img/tails.jpg" alt="Tails">
+          </label>
+        </div>
+      </div>
+      <form id="form">
+        <div class="row">
+          <div class="column">
+            <input type="radio" name="ht-selector" id="heads" value="0" checked>
+          </div>
+          <div class="column">
+            <input type="radio" name="ht-selector" id="tails" value="1">
+          </div>
+        </div>
+        <label class="label-amount" for="amount">Amount of Ether to bet</label>
+        <input type="number" name="amount" id="amount-to-bet" placeholder="Enter amount in ETH" min="0.01" step="0.01"
+          required>
+        <div class="exchange-rate-info">(~<span id="bet-in-dollar"></span>$)</div>
+        <div class="info-text">50% chance to win <span id="bet-in-eth2"></span> ETH (~<span id="bet-in-dollar2"></span>$)</div>
+        <input id="play-button" type="submit" value="Play!">
+      </form>
+    </div>
+
+    <div class="jackpot">
+      <h2 class="jackpot-heading">Jackpot</h2>
+      <h1 class="eth-in-jackpot"></h1>
+    </div>
+    <div class="result-coin">
+      <canvas></canvas>
+      <!-- <p class="status-text">You won!</p> -->
+    </div>
+    <div class="recent-games">
+      <h2>Recent Games</h2>
+      <table class="recent-games-table">
+        <thead>
+          <tr>
+            <th>Address</th>
+            <th>Amount bet [ETH]</th>
+            <th>Bet on</th>
+            <th>Won/Lost</th>
+            <th>Jackpot [ETH]</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <p>Contract address: <span class="contract-address"></span></p>
 
@@ -55,7 +93,7 @@
   <button class="load-data">load data</button>
 
   <script src="js/ethers-v4_0_39.min.js"></script>
-  <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+  <script src="js/three.min.js"></script>
   <script src="js/main.js"></script>
 </body>
 
