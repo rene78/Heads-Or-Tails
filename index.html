@@ -14,12 +14,12 @@
 
 <body>
   <div class="content">
-    <div class="header">
+    <div class="header to-blur">
       <h1>Heads or Tails</h1>
     </div>
-    <div class="contract-info">Game only works on main net, etc.</div>
+    <div class="contract-info to-blur">Game only works on main net, etc.</div>
 
-    <div class="action">
+    <div class="action to-blur">
       <p>Select coin side</p>
       <div class="row">
         <div class="column">
@@ -47,21 +47,21 @@
           required>
         <div class="exchange-rate-info">(~<span id="bet-in-dollar">0.00</span>$)</div>
         <div class="info-text">50% chance to win <span id="bet-in-eth2"></span> ETH (~<span id="bet-in-dollar2"></span>$)</div>
-        <input id="play-button" type="submit" value="Play!">
+        <input class="play-button" type="submit" value="Play!">
       </form>
     </div>
 
-    <div class="jackpot">
+    <div class="jackpot to-blur">
       <h2 class="jackpot-heading">Jackpot</h2>
       <h1 class="eth-in-jackpot"></h1>
     </div>
 
     <div class="result-coin">
       <canvas></canvas>
-      <p id="status-text">You won!</p>
-    </div>
+      <!-- <p class="won-lost">You won!</p> -->
+      <p class="infotext"></div>
 
-    <div class="recent-games">
+    <div class="recent-games to-blur">
       <h2>Recent Games</h2>
       <table class="recent-games-table">
         <thead>
@@ -77,9 +77,10 @@
         </tbody>
       </table>
     </div>
+
   </div>
 
-  <p>Contract address: <span class="contract-address"></span></p>
+  <p class="contract-address-github to-blur">Contract address: <span class="contract-address"></span></p>
 
   <template id="productrow">
     <tr>
@@ -90,10 +91,11 @@
       <td></td>
     </tr>
   </template>
-
-  <button class="blur">blur</button>
-  <button class="stop-coin" onclick="swissFranc.stopAnimation('heads')">Stop coin animation</button>
-  <button class="start-coin" onclick="swissFranc.animateCoin()">Start coin animation</button>
+  
+  <button onclick="toggleBlur()">blur</button>
+  <button onclick="startCoinFlip()">Start coin animation</button>
+  <button onclick="stopCoinFlip()">Stop coin animation</button>
+  <!-- <button onclick="toggleVisibility()">Toggle visibility</button> -->
 
   <script src="js/ethers-v4_0_39.min.js"></script>
   <script src="js/three.min.js"></script>

@@ -74,7 +74,7 @@ input[type=number]:focus {
 }
 
 /* play button */
-#play-button {
+.play-button {
   width: 200px;
   background-color: #00C3FF;
   border: none;
@@ -88,6 +88,10 @@ input[type=number]:focus {
   margin: 20px auto 20px;
 }
 
+.play-button:disabled {
+  cursor: not-allowed;
+}
+
 .jackpot {
   grid-area: jackpot;
   background-color: red;
@@ -96,12 +100,12 @@ input[type=number]:focus {
 .result-coin {
   grid-area: result-coin;
   background-color: cyan;
-  position: relative;  /* Needed to place the child "status-text" with "position: absolute" */
+  position: relative;  /* Needed to place the child "won-lost" with "position: absolute" */
 }
 
 canvas { width: 100%; height: 100%; }
 
-#status-text {
+.won-lost {
   position: absolute;
   left: 50%;
   top: 40%;
@@ -133,6 +137,12 @@ canvas { width: 100%; height: 100%; }
   color: red;
 }
 
+.contract-address-github {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+}
+
 .content {
   display: grid;
   grid-template-areas:
@@ -156,6 +166,9 @@ canvas { width: 100%; height: 100%; }
       'jackpot'
       'recent-games'
       'result-coin';
+  }
+  .contract-address-github {
+    position: relative;
   }
 }
 

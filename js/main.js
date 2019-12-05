@@ -19,8 +19,9 @@ let signer;
 let swissFranc;
 
 window.addEventListener('load', () => {
-  swissFranc = three(); //initialize coin
-  setTimeout(() => swissFranc.stopAnimation("heads"), 1000); //stop initial coin animation after 1sec
+  // swissFranc = three(); //initialize coin
+  setTimeout(() => swissFranc = three(), 1000); ////initialize coin 1sec after load
+  setTimeout(() => swissFranc.stopAnimation("heads"), 2000); //stop initial coin animation after 1sec
   loadWeb3(); //load all relevant infos in order to interact with Ethereum
   getEthFiatRate() //Get current ETH-fiat exchange rate from Cryptocompare
 });
@@ -343,15 +344,43 @@ function three() {
 
 // ---------------------------Temporary stuff---------------------------
 // Blur button
-document.querySelector(".blur").addEventListener("click", toggleBlur);
 function toggleBlur() {
-  // let blur = document.querySelector(".wait");
-  document.body.classList.toggle("wait");
+  const elements = document.querySelectorAll(".to-blur");
+  // console.log(elements);
+  for (let i = 0; i < elements.length; i++) {
+    elements[i].classList.toggle("wait");
+  }
 }
 
-// Start/stop coin animation
-// document.querySelector(".stop-coin").addEventListener("click", swissFranc.stopAnimation);
-// document.querySelector(".start-coin").addEventListener("click", swissFranc.animateCoin);
+//Start the coin animation with message below animation div
+function startCoinFlip() {
+  swissFranc.animateCoin();//start coin animation
+  toggleBlur(); //blur all irrelevant divs
+  togglePlayButton() //deactivate play button functionality
+  document.querySelector(".infotext").innerHTML = "<b>Game on!</b><br>Please be patient. Depending on the gas price it might take a while..."
+}
+
+//toggle play button functionality
+function togglePlayButton() {
+  const playButton = document.querySelector(".play-button");
+  if (playButton.disabled) playButton.disabled = "";
+  else playButton.disabled = "disabled";
+}
+
+//Stop the coin animation with result message below animation div
+function stopCoinFlip() {
+  swissFranc.stopAnimation("tails");//stop coin animation
+  setTimeout(() => {
+    toggleBlur(); //unblur all divs
+    togglePlayButton() //deactivate play button functionality
+    document.querySelector(".infotext").innerHTML = "<b>You won!</b>"//Show message
+  }, 1500); //unblur and show message 1.5s after request to stop animation
+}
+
+function toggleVisibility() {
+  let infotext = document.querySelector(".infotext");
+  infotext.classList.toggle("show-hide");
+}
 
 async function getWei() {
   let jackpot = headsOrTails.getValue();
