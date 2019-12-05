@@ -16,12 +16,15 @@ const contractAddress = "0x7f8b9483b79f735C34820497A1a7f9FB82C9224b";//Contract 
 // const contractAddress = "7855c451eE02CA17B4e2C08B628D5445FbF3dc6b";//Contract address on Ganache
 let provider;
 let signer;
-const swissFranc = three();
+let swissFranc;
 
-//load all relevant infos in order to interact with Ethereum
-window.addEventListener('load', loadWeb3());
-//Get current ETH-fiat exchange rate from Cryptocompare
-window.addEventListener('load', getEthFiatRate());
+window.addEventListener('load', () => {
+  swissFranc = three(); //initialize coin
+  setTimeout(() => swissFranc.stopAnimation("heads"), 1000); //stop initial coin animation after 1sec
+  loadWeb3(); //load all relevant infos in order to interact with Ethereum
+  getEthFiatRate() //Get current ETH-fiat exchange rate from Cryptocompare
+});
+
 //Launch play() when user clicks on play button
 document.getElementById("form").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -280,7 +283,7 @@ function three() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     if (canvas.width !== width || canvas.height !== height) {
-      console.log("Container size of coin animation has changed. Canvas size updated!");
+      console.log("Container size of coin animation has changed (w: " + width + ", height: " + height + "). Canvas size updated!");
       // you must pass false here or three.js sadly fights the browser
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
@@ -326,9 +329,6 @@ function three() {
     if (deltaAngle < 0.06 && deltaAngle > -0.06) {
       cancelAnimationFrame(id);//cancel coin animation
       cancelAnimationFrame(stopAnimation);//cancel excution of this function
-      //show start button
-      let startButton = document.querySelector(".start-button");
-      if (startButton) startButton.className = ""; //remove display: none, if not already done
       return;
     }
     requestAnimationFrame(stopAnimation);//rerun this function until if-statment above is true
@@ -349,8 +349,9 @@ function toggleBlur() {
   document.body.classList.toggle("wait");
 }
 
-// Load previous games
-document.querySelector(".load-data").addEventListener("click", getWei);
+// Start/stop coin animation
+// document.querySelector(".stop-coin").addEventListener("click", swissFranc.stopAnimation);
+// document.querySelector(".start-coin").addEventListener("click", swissFranc.animateCoin);
 
 async function getWei() {
   let jackpot = headsOrTails.getValue();

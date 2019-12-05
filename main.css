@@ -96,10 +96,21 @@ input[type=number]:focus {
 .result-coin {
   grid-area: result-coin;
   background-color: cyan;
-  /* height: 160px; */
+  position: relative;  /* Needed to place the child "status-text" with "position: absolute" */
 }
 
 canvas { width: 100%; height: 100%; }
+
+#status-text {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-weight: bold;
+  font-size: 1.7em;
+  background: rgba(0, 151, 19, 0.6);
+}
 
 .recent-games {
   grid-area: recent-games;

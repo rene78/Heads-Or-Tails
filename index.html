@@ -45,7 +45,7 @@
         <label class="label-amount" for="amount">Amount of Ether to bet</label>
         <input type="number" name="amount" id="amount-to-bet" placeholder="Enter amount in ETH" min="0.01" step="0.01"
           required>
-        <div class="exchange-rate-info">(~<span id="bet-in-dollar"></span>$)</div>
+        <div class="exchange-rate-info">(~<span id="bet-in-dollar">0.00</span>$)</div>
         <div class="info-text">50% chance to win <span id="bet-in-eth2"></span> ETH (~<span id="bet-in-dollar2"></span>$)</div>
         <input id="play-button" type="submit" value="Play!">
       </form>
@@ -55,10 +55,12 @@
       <h2 class="jackpot-heading">Jackpot</h2>
       <h1 class="eth-in-jackpot"></h1>
     </div>
+
     <div class="result-coin">
       <canvas></canvas>
-      <!-- <p class="status-text">You won!</p> -->
+      <p id="status-text">You won!</p>
     </div>
+
     <div class="recent-games">
       <h2>Recent Games</h2>
       <table class="recent-games-table">
@@ -90,7 +92,8 @@
   </template>
 
   <button class="blur">blur</button>
-  <button class="load-data">load data</button>
+  <button class="stop-coin" onclick="swissFranc.stopAnimation('heads')">Stop coin animation</button>
+  <button class="start-coin" onclick="swissFranc.animateCoin()">Start coin animation</button>
 
   <script src="js/ethers-v4_0_39.min.js"></script>
   <script src="js/three.min.js"></script>
