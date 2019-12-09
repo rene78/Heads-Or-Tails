@@ -21,7 +21,7 @@ let swissFranc;
 window.addEventListener('load', () => {
   // swissFranc = three(); //initialize coin
   setTimeout(() => swissFranc = three(), 1000); ////initialize coin 1sec after load
-  setTimeout(() => swissFranc.stopAnimation("heads"), 2000); //stop initial coin animation after 1sec
+  setTimeout(() => swissFranc.stopAnimation("heads"), 2000); //stop initial coin animation after 2sec
   loadWeb3(); //load all relevant infos in order to interact with Ethereum
   getEthFiatRate() //Get current ETH-fiat exchange rate from Cryptocompare
 });
@@ -57,16 +57,18 @@ async function loadWeb3() {
       // console.log(provider);
 
       // Acccounts now exposed. Load the contract!
-      loadBlockchainData();
+      // loadBlockchainData();
     } catch (error) {
       console.log("There was and error: ", error.message);//In case user denied access
+      //Load blockchain and contract data (jackpot, last games) via ethers default provider (Infura, Etherscan)
+      provider = ethers.getDefaultProvider('ropsten');
     }
   }
   // Legacy dapp browsers (acccounts always exposed)...
   else if (window.web3) {
     provider = new ethers.providers.Web3Provider(web3.currentProvider);
     console.log("User has a LEGACY dapp browser!");
-    loadBlockchainData();
+    // loadBlockchainData();
   }
   // Non-dapp browsers...
   else {
@@ -74,8 +76,9 @@ async function loadWeb3() {
     window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
     provider = ethers.getDefaultProvider('ropsten');
     // console.log(provider);
-    loadBlockchainData();
+    // loadBlockchainData();
   }
+  loadBlockchainData();
 }
 
 async function loadBlockchainData() {
@@ -109,10 +112,10 @@ async function play(headsOrTailsSelection, amountToBetEther) {
   //Define some custom settings when initiating the contract function
   let overrides = {
     // The maximum units of gas for the transaction to use
-    // gasLimit: 23000,
+    gasLimit: 150000,
 
     // The price (in wei) per unit of gas
-    // gasPrice: utils.parseUnits('9.0', 'gwei'),
+    gasPrice: ethers.utils.parseUnits('5.0', 'gwei'),
 
     // The amount to send with the transaction (i.e. msg.value)
     value: amountToBetWei
@@ -121,6 +124,7 @@ async function play(headsOrTailsSelection, amountToBetEther) {
   try {
     toggleBlur();
     let tx = await headsOrTails.lottery(headsOrTailsSelection, overrides);//In case of failure it jumps straight to catch()
+    scrollDown(); //Scroll to coin animation
     console.log(tx.hash);
     logEvent();
   } catch (err) {
@@ -139,6 +143,12 @@ function logEvent() {
     getContractBalance();
     // console.log(event);
   });
+}
+
+//Scroll down to coin animation after click on "Play"
+function scrollDown() {
+  const coinAnimation = document.querySelector(".result-coin");
+  setTimeout(function () { coinAnimation.scrollIntoView(); }, 10); //Without delay scrollIntoView does not work.
 }
 
 async function getContractBalance() {
@@ -185,7 +195,7 @@ async function getLatestGameData() {
   }
 }
 
-async function getEthFiatRate() {
+function getEthFiatRate() {
   const url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR";
   fetch(url)
     .then(handleErrors)
@@ -284,13 +294,12 @@ function three() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     if (canvas.width !== width || canvas.height !== height) {
-      console.log("Container size of coin animation has changed (w: " + width + ", height: " + height + "). Canvas size updated!");
+      // console.log("Container size of coin animation has changed (w: " + width + ", height: " + height + "). Canvas size updated!");
+      console.log("Container size of coin animation has changed. Canvas size updated!");
       // you must pass false here or three.js sadly fights the browser
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-
-      // set render target sizes here
     }
   }
 
@@ -314,25 +323,29 @@ function three() {
   }
 
   function stopAnimation(side) {
-    //on first run of function "side" is a string ("heads" or "tails"). On subsequent runs it is a timestamp (number)
-    if (typeof side === "string") {
-      // console.log(side);
-      angleToVertical = (side === "tails") ? (3 * Math.PI / 2) : (Math.PI / 2);//tails=1.5pi, heads=pi/2
-      // console.log(angleToVertical);
-    }
+    // console.log(side);
+    angleToVertical = (side === "tails") ? (3 * Math.PI / 2) : (Math.PI / 2);//tails=1.5pi, heads=pi/2
+    // console.log(angleToVertical);
 
-    let rotVal = coin.rotation.x;
+    //Send a promise. Once stop condition is fulfilled resolve the promise.
+    return new Promise(function (resolve) {
+      const checkStopCondition = function () {
+        let rotVal = coin.rotation.x;
+        // console.log(rotVal);
 
-    // console.log(rotVal);
-    let deltaAngle = rotVal % (Math.PI * 2) - angleToVertical;
-    // console.log(deltaAngle);
+        let deltaAngle = rotVal % (Math.PI * 2) - angleToVertical;
+        // console.log(deltaAngle);
 
-    if (deltaAngle < 0.06 && deltaAngle > -0.06) {
-      cancelAnimationFrame(id);//cancel coin animation
-      cancelAnimationFrame(stopAnimation);//cancel excution of this function
-      return;
-    }
-    requestAnimationFrame(stopAnimation);//rerun this function until if-statment above is true
+        if (deltaAngle < 0.06 && deltaAngle > -0.06) {
+          resolve("Stopped!");
+          cancelAnimationFrame(id);//cancel coin animation
+          cancelAnimationFrame(checkStopCondition);//cancel excution of this function
+          return;
+        }
+        requestAnimationFrame(checkStopCondition)
+      };
+      checkStopCondition();
+    });
   }
 
   const coinObj = {
@@ -368,13 +381,25 @@ function togglePlayButton() {
 }
 
 //Stop the coin animation with result message below animation div
+// function stopCoinFlip() {
+//   swissFranc.stopAnimation("tails");//stop coin animation
+//   setTimeout(() => {
+//     toggleBlur(); //unblur all divs
+//     togglePlayButton() //activate play button functionality
+//     document.querySelector(".infotext").innerHTML = "<h1> You won!</h1>"//Show message
+//   }, 1500); //unblur and show message 1.5s after request to stop animation
+// }
+
 function stopCoinFlip() {
-  swissFranc.stopAnimation("tails");//stop coin animation
-  setTimeout(() => {
+  swissFranc.stopAnimation("heads").then(function (r) {
+    console.log(r);
     toggleBlur(); //unblur all divs
-    togglePlayButton() //deactivate play button functionality
-    document.querySelector(".infotext").innerHTML = "<b>You won!</b>"//Show message
-  }, 1500); //unblur and show message 1.5s after request to stop animation
+    togglePlayButton() //activate play button functionality
+    document.querySelector(".infotext").innerHTML = "<h1> You won!</h1>"//Show message
+  }).catch(function (r) {
+    // or do something else if it is rejected 
+    console.log("Something didn't work " + r);
+  });
 }
 
 function toggleVisibility() {

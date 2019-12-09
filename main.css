@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth; /* Smooth scrolling down to "play" */
+}
+
 body {
   background-color: black;
   color: white;
@@ -33,6 +37,7 @@ body {
   flex: 50%;
 }
 
+/*To make sure that label is always above input field*/
 label {
   display: block;
 }
@@ -41,6 +46,12 @@ label {
 input[type="radio"] {
   height: 25px;
   width: 25px;
+}
+
+/*Size of label 'Amount of Ether to bet' as large as h2*/
+.label-amount {
+  font-size: 1.5em;
+  font-weight: bold;
 }
 
 /* Input field for betting value */
