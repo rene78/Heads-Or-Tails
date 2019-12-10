@@ -2,7 +2,7 @@
 
 // The Contract interface
 const abi = [
-  "event GameResult(bool won)",
+  "event GameResult(uint8 side)",
   "function lottery(uint8 guess) returns (bool value)",
   "function getGameCount() view returns (uint8 value)",
   "function getGameEntry(uint index) public view returns(address addr, uint amountBet, uint8 guess, bool winner, uint ethInJackpot)"
@@ -12,11 +12,12 @@ const abi = [
 let headsOrTails;
 let ethUsd;
 const deployedNetwork = 3;//To which network is the contract deployed? Ganache: 5777, Ropsten: 3, Mainnet: 1
-const contractAddress = "0x7f8b9483b79f735C34820497A1a7f9FB82C9224b";//Contract address on Ropsten
-// const contractAddress = "7855c451eE02CA17B4e2C08B628D5445FbF3dc6b";//Contract address on Ganache
+const contractAddress = "0x113b1D84A5D25b9A921434F8131b71aDa45dAeac";//Contract address on Ropsten
+// const contractAddress = "0xEf8A3a8cD1c26C1a36A9C3594A8613c0aF18d499";//Contract address on Ganache
 let provider;
 let signer;
 let swissFranc;
+let headsOrTailsSelection;
 
 window.addEventListener('load', () => {
   // swissFranc = three(); //initialize coin
@@ -31,7 +32,7 @@ document.getElementById("form").addEventListener("submit", (event) => {
   event.preventDefault();
   //Find out which radio button is selected and how much money is bet.
   const amountToBetEther = document.querySelector("#amount-to-bet").value;
-  const headsOrTailsSelection = document.querySelector(":checked").value;
+  headsOrTailsSelection = parseInt(document.querySelector(":checked").value);
   // console.log("0 or 1: " + headsOrTailsSelection);
   // console.log("Amount to bet (ETH): " + amountToBetEther);
   play(headsOrTailsSelection, amountToBetEther);
@@ -122,9 +123,13 @@ async function play(headsOrTailsSelection, amountToBetEther) {
   };
 
   try {
-    toggleBlur();
+    toggleBlur(); //blur all irrelevant divs
+    // console.log("Side selection send to contract: " + headsOrTailsSelection);
     let tx = await headsOrTails.lottery(headsOrTailsSelection, overrides);//In case of failure it jumps straight to catch()
     scrollDown(); //Scroll to coin animation
+    swissFranc.animateCoin();//start coin animation
+    togglePlayButton() //deactivate play button functionality
+    document.querySelector(".infotext").innerHTML = "<b>Game on!</b><br>Please be patient. Depending on the gas price it might take a while..."
     console.log(tx.hash);
     logEvent();
   } catch (err) {
@@ -135,13 +140,25 @@ async function play(headsOrTailsSelection, amountToBetEther) {
 
 //Listen for an event. After receipt stop listening.
 function logEvent() {
-  headsOrTails.once("GameResult", (won, event) => {
-    const msg = won ? "You won!" : "You lost!";
-    window.alert(msg);
-    toggleBlur();
-    getLatestGameData();
-    getContractBalance();
+  headsOrTails.once("GameResult", (side, event) => {
     // console.log(event);
+    console.log("Bet on: " + headsOrTailsSelection + " Typeof: "+ typeof headsOrTailsSelection);
+    console.log("Result: " + side + " Typeof: "+ typeof side);
+    const msg = (side === headsOrTailsSelection) ? "<h1 style='color:green;'>You won!</h1>" : "<h1 style='color:red;'>You lost!</h1>";
+    // console.log(msg);
+
+    swissFranc.stopAnimation(side).then(function (r) {
+      console.log(r);
+      setTimeout(() => toggleBlur(), 1000); //unblur divs 1sec after animation stop
+      togglePlayButton() //activate play button functionality
+      // toggleBlur(); //unblur divs
+      getLatestGameData();
+      getContractBalance();
+      document.querySelector(".infotext").innerHTML = msg //Show message
+    }).catch(function (r) {
+      // or do something else if it is rejected 
+      console.log("Something didn't work " + r);
+    });
   });
 }
 
@@ -324,7 +341,7 @@ function three() {
 
   function stopAnimation(side) {
     // console.log(side);
-    angleToVertical = (side === "tails") ? (3 * Math.PI / 2) : (Math.PI / 2);//tails=1.5pi, heads=pi/2
+    angleToVertical = (side === 1) ? (3 * Math.PI / 2) : (Math.PI / 2);//tails=1.5pi, heads=pi/2
     // console.log(angleToVertical);
 
     //Send a promise. Once stop condition is fulfilled resolve the promise.
@@ -365,46 +382,31 @@ function toggleBlur() {
   }
 }
 
-//Start the coin animation with message below animation div
-function startCoinFlip() {
-  swissFranc.animateCoin();//start coin animation
-  toggleBlur(); //blur all irrelevant divs
-  togglePlayButton() //deactivate play button functionality
-  document.querySelector(".infotext").innerHTML = "<b>Game on!</b><br>Please be patient. Depending on the gas price it might take a while..."
-}
-
-//toggle play button functionality
+//toggle activate/deactivate of play button
 function togglePlayButton() {
   const playButton = document.querySelector(".play-button");
   if (playButton.disabled) playButton.disabled = "";
   else playButton.disabled = "disabled";
 }
 
-//Stop the coin animation with result message below animation div
-// function stopCoinFlip() {
-//   swissFranc.stopAnimation("tails");//stop coin animation
-//   setTimeout(() => {
-//     toggleBlur(); //unblur all divs
-//     togglePlayButton() //activate play button functionality
-//     document.querySelector(".infotext").innerHTML = "<h1> You won!</h1>"//Show message
-//   }, 1500); //unblur and show message 1.5s after request to stop animation
-// }
+//Start the coin animation with message below animation div
+function startCoinFlip() {
+  swissFranc.animateCoin();//start coin animation
+  // toggleBlur(); //blur all irrelevant divs
+  togglePlayButton() //deactivate play button functionality
+  document.querySelector(".infotext").innerHTML = "<b>Game on!</b><br>Please be patient. Depending on the gas price it might take a while..."
+}
 
-function stopCoinFlip() {
-  swissFranc.stopAnimation("heads").then(function (r) {
+function stopCoinFlip(side) {
+  swissFranc.stopAnimation(side).then(function (r) {
     console.log(r);
-    toggleBlur(); //unblur all divs
+    // toggleBlur(); //unblur all divs
     togglePlayButton() //activate play button functionality
     document.querySelector(".infotext").innerHTML = "<h1> You won!</h1>"//Show message
   }).catch(function (r) {
     // or do something else if it is rejected 
     console.log("Something didn't work " + r);
   });
-}
-
-function toggleVisibility() {
-  let infotext = document.querySelector(".infotext");
-  infotext.classList.toggle("show-hide");
 }
 
 async function getWei() {

@@ -1,5 +1,5 @@
 // Version of Solidity compiler this program was written for
-pragma solidity ^0.5.8;
+pragma solidity ^0.5.11;
 
 // Heads or tails game contract
 contract HeadsOrTails {
@@ -16,8 +16,8 @@ contract HeadsOrTails {
 
   Game[] lastPlayedGames;
 
-  //Log game result in order to display it on frontend
-  event GameResult(bool won);
+  //Log game result (heads 0 or tails 1) in order to display it on frontend
+  event GameResult(uint8 side);
 
   // Contract constructor run only on contract creation. Set owner.
   constructor() public {
@@ -33,7 +33,7 @@ contract HeadsOrTails {
 
   //Play the game!
   function lottery(uint8 guess) public payable returns(bool){
-    require(guess == 0 || guess == 1, "Variable 'guess' should be either 0 or 1");
+    require(guess == 0 || guess == 1, "Variable 'guess' should be either 0 ('heads') or 1 ('tails')");
     require(msg.value > 0, "Bet more than 0");
     require(msg.value <= address(this).balance - msg.value, "You cannot bet more than what is available in the jackpot");
     //address(this).balance is increased by msg.value even before code is executed. Thus "address(this).balance-msg.value"
@@ -46,7 +46,7 @@ contract HeadsOrTails {
       won = true;
     }
 
-    emit GameResult(won);
+    emit GameResult(result);
     lastPlayedGames.push(Game(msg.sender, msg.value, guess, won, address(this).balance));
     return won; //Return value can only be used by other functions, but not within web3.js (as of 2019)
   }
