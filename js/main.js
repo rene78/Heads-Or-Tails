@@ -1,5 +1,3 @@
-// const ethers = require('ethers');
-
 // The Contract interface
 const abi = [
   "event GameResult(uint8 side)",
@@ -21,7 +19,7 @@ let headsOrTailsSelection;
 
 window.addEventListener('load', () => {
   // swissFranc = three(); //initialize coin
-  setTimeout(() => swissFranc = three(), 1000); ////initialize coin 1sec after load
+  setTimeout(() => swissFranc = three(), 1000); ////initialize coin 1sec after load. Without the timeout there are issues due to div resizing
   setTimeout(() => swissFranc.stopAnimation("heads"), 2000); //stop initial coin animation after 2sec
   loadWeb3(); //load all relevant infos in order to interact with Ethereum
   getEthFiatRate(); //Get current ETH-fiat exchange rate from Cryptocompare
@@ -57,6 +55,7 @@ setTimeout(() => {
   })
 }, 500);
 
+//Load web3 interface or get read access via Infura
 async function loadWeb3() {
   // Connect to the network
   // Modern dapp browsers...
@@ -97,10 +96,11 @@ async function loadWeb3() {
   loadBlockchainData();
 }
 
+//Load contract information and define signer & provider
 async function loadBlockchainData() {
   //Show link to contract on Etherscan and link to Github repository
   contractAddressShortened = contractAddress.slice(0, 4) + "..." + contractAddress.slice(-4);
-  document.querySelector(".contract-address").innerHTML = '<a href="https://ropsten.etherscan.io/address/' + contractAddress + '">' + contractAddressShortened + '</a>, Code on Github: <a href="https://github.com/rene78/Heads-Or-Tails">Heads or Tails</a>';
+  document.querySelector(".contract-address").innerHTML = '<a href="https://ropsten.etherscan.io/address/' + contractAddress + '">' + contractAddressShortened + '</a> Code on Github: <a href="https://github.com/rene78/Heads-Or-Tails">Heads or Tails</a>';
 
   //First check if contract is deployed to the network
   let activeNetwork = await provider.getNetwork(provider);
@@ -119,13 +119,14 @@ async function loadBlockchainData() {
   }
 
   headsOrTails = new ethers.Contract(contractAddress, abi, signer);
-  console.log(headsOrTails);
+  // console.log(headsOrTails);
 
   //Populate table of last played games & Display amount of ETH in jackpot
   getLatestGameData();
   getContractBalance();
 }
 
+//Launch game
 async function play(headsOrTailsSelection, amountToBetEther) {
   const amountToBetWei = ethers.utils.parseEther(amountToBetEther);
   // console.log(amountToBetWei);
@@ -191,16 +192,18 @@ function scrollDown() {
   setTimeout(function () { coinAnimation.scrollIntoView(); }, 10); //Without delay scrollIntoView does not work.
 }
 
+//Get current contract balance (jackpot balance)
 async function getContractBalance() {
   const currentBalanceWei = await provider.getBalance(contractAddress);
   const currentBalanceEth = ethers.utils.formatEther(currentBalanceWei);
-  console.log("Contract balance (ETH): " + currentBalanceEth);
+  // console.log("Contract balance (ETH): " + currentBalanceEth);
   document.querySelector(".eth-in-jackpot").innerHTML = currentBalanceEth + " ETH (~" + (calcFiat(currentBalanceEth)) + "$)";
 
   //Set the max bet value to contract balance (i.e money in jackpot)
   document.querySelector("#amount-to-bet").max = currentBalanceEth;
 }
 
+//Fill out table with latest games
 async function getLatestGameData() {
   const gameCount = await headsOrTails.getGameCount();
   // console.log(gameCount);
@@ -235,6 +238,7 @@ async function getLatestGameData() {
   }
 }
 
+//Get ETH-USD/EUR exchange rate from cryptocompare
 function getEthFiatRate() {
   const url = "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD,EUR";
   fetch(url)
@@ -243,7 +247,7 @@ function getEthFiatRate() {
       return res.json();
     })
     .then(data => {
-      console.log(data.USD);
+      // console.log(data.USD);
       ethUsd = data.USD;
       // return (data.EUR);
     })
@@ -262,12 +266,14 @@ function handleErrors(response) {
   return response;
 }
 
+//Convert ETH in USD
 function calcFiat(etherToConvert) {
   // console.log(etherToConvert);
   // console.log(ethUsd);
   return (etherToConvert * ethUsd).toFixed(2);
 }
 
+//Everything related to Swiss franc animation
 function three() {
   let scene, camera, renderer, coin, id, angleToVertical;
   initializeScene();
@@ -407,8 +413,7 @@ function showAlert(text, colorClass) {
   contractInfo.classList.add(colorClass);
 }
 
-// ---------------------------Temporary stuff---------------------------
-// Blur button
+//Blur all elements with class "to-blur"
 function toggleBlur() {
   const elements = document.querySelectorAll(".to-blur");
   // console.log(elements);
@@ -417,34 +422,9 @@ function toggleBlur() {
   }
 }
 
-//toggle activate/deactivate of play button
+//Toggle activate/deactivate of play button
 function togglePlayButton() {
   const playButton = document.querySelector(".play-button");
   if (playButton.disabled) playButton.disabled = "";
   else playButton.disabled = "disabled";
-}
-
-//Start the coin animation with message below animation div
-function startCoinFlip() {
-  swissFranc.animateCoin();//start coin animation
-  // toggleBlur(); //blur all irrelevant divs
-  togglePlayButton() //deactivate play button functionality
-  document.querySelector(".infotext").innerHTML = "<b>Game on!</b><br>Please be patient. Depending on the gas price it might take a while..."
-}
-
-function stopCoinFlip(side) {
-  swissFranc.stopAnimation(side).then(function (r) {
-    console.log(r);
-    // toggleBlur(); //unblur all divs
-    togglePlayButton() //activate play button functionality
-    document.querySelector(".infotext").innerHTML = "<h1> You won!</h1>"//Show message
-  }).catch(function (r) {
-    // or do something else if it is rejected 
-    console.log("Something didn't work " + r);
-  });
-}
-
-async function getWei() {
-  let jackpot = headsOrTails.getValue();
-  console.log(jackpot);
 }
