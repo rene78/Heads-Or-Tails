@@ -8,19 +8,24 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.header {
+#header {
   grid-area: header;
-  background-color: green;
+  /* background-color: green; */
 }
+
 .contract-info {
   grid-area: contract-info;
+  margin: auto 0;
   /* display: none; */
-  background-color: rgb(86, 88, 82);
+  /* background-color: rgb(86, 88, 82); */
 }
+
+.fail {background-color: #f44336;}
+.success {color: green;}
 
 .action {
   grid-area: action;
-  background-color: grey;
+  /* background-color: grey; */
 }
 
 /* alignment of heads and tails images and radio buttons */
@@ -105,18 +110,18 @@ input[type=number]:focus {
 
 .jackpot {
   grid-area: jackpot;
-  background-color: red;
+  /* background-color: red; */
 }
 
 .result-coin {
   grid-area: result-coin;
-  background-color: cyan;
+  /* background-color: cyan; */
   position: relative;  /* Needed to place the child "won-lost" with "position: absolute" */
 }
 
 canvas { width: 100%; height: 100%; }
 
-.won-lost {
+/* .won-lost {
   position: absolute;
   left: 50%;
   top: 40%;
@@ -125,11 +130,11 @@ canvas { width: 100%; height: 100%; }
   font-weight: bold;
   font-size: 1.7em;
   background: rgba(0, 151, 19, 0.6);
-}
+} */
 
 .recent-games {
   grid-area: recent-games;
-  background-color: yellowgreen;
+  /* background-color: yellowgreen; */
 }
 
 .recent-games-table {

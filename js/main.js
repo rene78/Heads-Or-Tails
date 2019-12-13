@@ -24,7 +24,7 @@ window.addEventListener('load', () => {
   setTimeout(() => swissFranc = three(), 1000); ////initialize coin 1sec after load
   setTimeout(() => swissFranc.stopAnimation("heads"), 2000); //stop initial coin animation after 2sec
   loadWeb3(); //load all relevant infos in order to interact with Ethereum
-  getEthFiatRate() //Get current ETH-fiat exchange rate from Cryptocompare
+  getEthFiatRate(); //Get current ETH-fiat exchange rate from Cryptocompare
 });
 
 //Launch play() when user clicks on play button
@@ -37,6 +37,7 @@ document.getElementById("form").addEventListener("submit", (event) => {
   // console.log("Amount to bet (ETH): " + amountToBetEther);
   play(headsOrTailsSelection, amountToBetEther);
 });
+
 //Calculate fiat value during input of bet amount and show on page
 document.getElementById("amount-to-bet").addEventListener("input", () => {
   const amountToBetEther = document.querySelector("#amount-to-bet").value;
@@ -46,6 +47,16 @@ document.getElementById("amount-to-bet").addEventListener("input", () => {
   document.querySelector("#bet-in-dollar2").innerText = calcFiat(amountToBetEther) * 2;
 });
 
+//Reload web3 on network change (setTimeout needed, because else "window.ethereum.on('networkChanged',..."
+//would be triggered on page load --> loadWeb3() would be fired twice)
+setTimeout(() => {
+  if(!window.ethereum) return;//ignore this function in case of non-ethereum browser
+  window.ethereum.on('networkChanged', function (netId) {
+    console.log("network has changed. New id: " + netId);
+    loadWeb3(); //load all relevant infos in order to interact with Ethereum
+  })
+}, 500);
+
 async function loadWeb3() {
   // Connect to the network
   // Modern dapp browsers...
@@ -54,6 +65,7 @@ async function loadWeb3() {
       // Request account access if needed
       await ethereum.enable();//If this doesn't work an error is thrown
       console.log("User has a MODERN dapp browser!");
+      showAlert("You are ready to play!", "success");
       provider = new ethers.providers.Web3Provider(ethereum);
       // console.log(provider);
 
@@ -61,6 +73,7 @@ async function loadWeb3() {
       // loadBlockchainData();
     } catch (error) {
       console.log("There was and error: ", error.message);//In case user denied access
+      showAlert("App needs access your account in order to play", "fail");
       //Load blockchain and contract data (jackpot, last games) via ethers default provider (Infura, Etherscan)
       provider = ethers.getDefaultProvider('ropsten');
     }
@@ -69,12 +82,14 @@ async function loadWeb3() {
   else if (window.web3) {
     provider = new ethers.providers.Web3Provider(web3.currentProvider);
     console.log("User has a LEGACY dapp browser!");
+    showAlert("You are ready to play!", "success");
     // loadBlockchainData();
   }
   // Non-dapp browsers...
   else {
     //Load blockchain and contract data (jackpot, last games) via ethers default provider (Infura, Etherscan)
-    window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
+    console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+    showAlert("Non-Ethereum browser detected. You should consider trying MetaMask in order to play", "fail");
     provider = ethers.getDefaultProvider('ropsten');
     // console.log(provider);
     // loadBlockchainData();
@@ -83,24 +98,32 @@ async function loadWeb3() {
 }
 
 async function loadBlockchainData() {
+  //Show link to contract on Etherscan and link to Github repository
+  contractAddressShortened = contractAddress.slice(0, 4) + "..." + contractAddress.slice(-4);
+  document.querySelector(".contract-address").innerHTML = '<a href="https://ropsten.etherscan.io/address/' + contractAddress + '">' + contractAddressShortened + '</a>, Code on Github: <a href="https://github.com/rene78/Heads-Or-Tails">Heads or Tails</a>';
+
   //First check if contract is deployed to the network
   let activeNetwork = await provider.getNetwork(provider);
   // console.log(activeNetwork);
 
   if (activeNetwork.chainId === deployedNetwork) {
-    //When connected via Metamask (i.e. "provider.connection" defined) define a signer (for read-write accesss),
+    //When connected via Metamask (i.e. "provider.connection" defined) define a signer (for read-write access),
     //else (i.e. non-ethereum browser) use provider (read access only)
     if (provider.connection) signer = provider.getSigner(); else signer = provider;
 
-    headsOrTails = new ethers.Contract(contractAddress, abi, signer);
-    console.log(headsOrTails);
+  } else {
+    //Ethereum enabled browser, but wrong network selected.
+    showAlert("Please switch to Ropsten test net in order to play", "fail");
+    provider = ethers.getDefaultProvider('ropsten');//switch back to default provider in order to read game data and jackpot
+    signer = provider; //read only
+  }
 
-    //Populate table of last played games & Display amount of ETH in jackpot
-    getLatestGameData();
-    getContractBalance();
-    //Show contract address
-    document.querySelector(".contract-address").innerHTML = '<a href="https://ropsten.etherscan.io/address/' + contractAddress + '">' + contractAddress + '</a>';
-  } else window.alert("Contract not deployed to selected network");
+  headsOrTails = new ethers.Contract(contractAddress, abi, signer);
+  console.log(headsOrTails);
+
+  //Populate table of last played games & Display amount of ETH in jackpot
+  getLatestGameData();
+  getContractBalance();
 }
 
 async function play(headsOrTailsSelection, amountToBetEther) {
@@ -128,7 +151,7 @@ async function play(headsOrTailsSelection, amountToBetEther) {
     let tx = await headsOrTails.lottery(headsOrTailsSelection, overrides);//In case of failure it jumps straight to catch()
     scrollDown(); //Scroll to coin animation
     swissFranc.animateCoin();//start coin animation
-    togglePlayButton() //deactivate play button functionality
+    togglePlayButton(); //deactivate play button functionality
     document.querySelector(".infotext").innerHTML = "<b>Game on!</b><br>Please be patient. Depending on the gas price it might take a while..."
     console.log(tx.hash);
     logEvent();
@@ -138,12 +161,12 @@ async function play(headsOrTailsSelection, amountToBetEther) {
   }
 }
 
-//Listen for an event. After receipt stop listening.
+//Await GameResult event. Then stop coin animation on right side, update game history and jackpot.
 function logEvent() {
   headsOrTails.once("GameResult", (side, event) => {
     // console.log(event);
-    console.log("Bet on: " + headsOrTailsSelection + " Typeof: "+ typeof headsOrTailsSelection);
-    console.log("Result: " + side + " Typeof: "+ typeof side);
+    console.log("Bet on: " + headsOrTailsSelection + " Typeof: " + typeof headsOrTailsSelection);
+    console.log("Result: " + side + " Typeof: " + typeof side);
     const msg = (side === headsOrTailsSelection) ? "<h1 style='color:green;'>You won!</h1>" : "<h1 style='color:red;'>You lost!</h1>";
     // console.log(msg);
 
@@ -153,7 +176,7 @@ function logEvent() {
       togglePlayButton() //activate play button functionality
       // toggleBlur(); //unblur divs
       getLatestGameData();
-      getContractBalance();
+      getContractBalance(); //Display current amount of ETH in jackpot
       document.querySelector(".infotext").innerHTML = msg //Show message
     }).catch(function (r) {
       // or do something else if it is rejected 
@@ -224,7 +247,10 @@ function getEthFiatRate() {
       ethUsd = data.USD;
       // return (data.EUR);
     })
-    .catch(error => console.error(error));
+    .catch(error => {
+      console.error(error);
+      ethUsd = 170; //Define static value, if download didn't work
+    });
 }
 
 //Handle errors from fetch operation
@@ -356,7 +382,7 @@ function three() {
         if (deltaAngle < 0.06 && deltaAngle > -0.06) {
           resolve("Stopped!");
           cancelAnimationFrame(id);//cancel coin animation
-          cancelAnimationFrame(checkStopCondition);//cancel excution of this function
+          cancelAnimationFrame(checkStopCondition);//cancel execution of this function
           return;
         }
         requestAnimationFrame(checkStopCondition)
@@ -370,6 +396,15 @@ function three() {
     animateCoin
   }
   return coinObj;
+}
+
+//Show alert with custom message
+function showAlert(text, colorClass) {
+  var contractInfo = document.querySelector(".contract-info");
+  contractInfo.innerHTML = text;
+  contractInfo.style.display = "block";
+  contractInfo.className = "contract-info to-blur"; //remove all former classnames, i.e. success, fail
+  contractInfo.classList.add(colorClass);
 }
 
 // ---------------------------Temporary stuff---------------------------
