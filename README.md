@@ -1,10 +1,8 @@
 # Ethereum Heads or Tails dApp
 Bet on either heads or tails and win (or lose) ether.
-* Provably fair. Nobody can tinker with the random number generation.
-* Frontend and smart contract program code is open-source (https://github.com/rene78/Heads-Or-Tails).
-* I don't keep any fees. There are only the miner fees.
+* Provably fair. Nobody can tinker with the random number generation (except evil miners).
+* Frontend and smart contract program code is open-source.
+* No fees except the ones from the miners.
 * Currently on Ropsten test net. Gonna transfer it to main net soon.
 
-![How to use][gif]
-
-[gif]: img/dapp-frontend.gif "How to use"
+<a href="https://www.youtube.com/watch?v=TYXS2O75v-4">![How to use](img/dapp-frontend.gif)</a>
