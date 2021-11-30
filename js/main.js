@@ -342,7 +342,7 @@ function three() {
     const canvas = renderer.domElement;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    if (canvas.width !== width || canvas.height !== height) {
+    if (canvas.width !== width) {
       // console.log("Container size of coin animation has changed (w: " + width + ", height: " + height + "). Canvas size updated!");
       console.log("Container size of coin animation has changed. Canvas size updated!");
       // you must pass false here or three.js sadly fights the browser
