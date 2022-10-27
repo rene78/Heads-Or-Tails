@@ -9,8 +9,8 @@ const abi = [
 //Global variables
 let headsOrTails;
 let ethUsd;
-const deployedNetwork = 3;//To which network is the contract deployed? Ganache: 5777, Ropsten: 3, Mainnet: 1
-const contractAddress = "0x113b1D84A5D25b9A921434F8131b71aDa45dAeac";//Contract address on Ropsten
+const deployedNetwork = 5;//To which network is the contract deployed? Ganache: 5777, Goerli: 5, Mainnet: 1
+const contractAddress = "0xab01Cdfba8c03D350549D0Ec55F39a6e904586F0";//Contract address on Goerli
 // const contractAddress = "0xEf8A3a8cD1c26C1a36A9C3594A8613c0aF18d499";//Contract address on Ganache
 let provider;
 let signer;
@@ -74,7 +74,7 @@ async function loadWeb3() {
       console.log("There was and error: ", error.message);//In case user denied access
       showAlert("App needs access your account in order to play", "fail");
       //Load blockchain and contract data (jackpot, last games) via ethers default provider (Infura, Etherscan)
-      provider = ethers.getDefaultProvider('ropsten');
+      provider = ethers.getDefaultProvider('goerli');
     }
   }
   // Legacy dapp browsers (acccounts always exposed)...
@@ -89,7 +89,7 @@ async function loadWeb3() {
     //Load blockchain and contract data (jackpot, last games) via ethers default provider (Infura, Etherscan)
     console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
     showAlert("Non-Ethereum browser detected. You should consider trying MetaMask in order to play", "fail");
-    provider = ethers.getDefaultProvider('ropsten');
+    provider = ethers.getDefaultProvider('goerli');
     // console.log(provider);
     // loadBlockchainData();
   }
@@ -100,7 +100,7 @@ async function loadWeb3() {
 async function loadBlockchainData() {
   //Show link to contract on Etherscan and link to Github repository
   contractAddressShortened = contractAddress.slice(0, 4) + "..." + contractAddress.slice(-4);
-  document.querySelector(".contract-address").innerHTML = '<a href="https://ropsten.etherscan.io/address/' + contractAddress + '">' + contractAddressShortened + '</a> Code on Github: <a href="https://github.com/rene78/Heads-Or-Tails">Heads or Tails</a>';
+  document.querySelector(".contract-address").innerHTML = '<a href="https://goerli.etherscan.io/address/' + contractAddress + '">' + contractAddressShortened + '</a> Code on Github: <a href="https://github.com/rene78/Heads-Or-Tails">Heads or Tails</a>';
 
   //First check if contract is deployed to the network
   let activeNetwork = await provider.getNetwork(provider);
@@ -113,8 +113,8 @@ async function loadBlockchainData() {
 
   } else {
     //Ethereum enabled browser, but wrong network selected.
-    showAlert("Please switch to Ropsten test net in order to play", "fail");
-    provider = ethers.getDefaultProvider('ropsten');//switch back to default provider in order to read game data and jackpot
+    showAlert("Please switch to Goerli test net in order to play", "fail");
+    provider = ethers.getDefaultProvider('goerli');//switch back to default provider in order to read game data and jackpot
     signer = provider; //read only
   }
 
@@ -139,8 +139,8 @@ async function play(headsOrTailsSelection, amountToBetEther) {
     // The maximum units of gas for the transaction to use
     gasLimit: 150000,
 
-    // The price (in wei) per unit of gas
-    gasPrice: ethers.utils.parseUnits('5.0', 'gwei'),
+    // The price (in wei) per unit of gas. Best to let the wallet choose the price.
+    //gasPrice: ethers.utils.parseUnits('5.0', 'gwei'),
 
     // The amount to send with the transaction (i.e. msg.value)
     value: amountToBetWei
